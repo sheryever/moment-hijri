@@ -140,10 +140,10 @@
 			return this.hMonth() + 1
 		},
 		hMMM: function (format) {
-			return this.localeData().hMonthsShort(this, format)
+			return this.lang().hMonthsShort(this, format)
 		},
 		hMMMM: function (format) {
-			return this.localeData().hMonths(this, format)
+			return this.lang().hMonths(this, format)
 		},
 		hD: function () {
 			return this.hDate()
@@ -182,7 +182,7 @@
 
 	function ordinalizeToken(func, period) {
 		return function (a) {
-			return this.localeData().ordinal(func.call(this, a), period)
+			return this.lang().ordinal(func.call(this, a), period)
 		}
 	}
 
@@ -259,7 +259,7 @@
 	/************************************
       Languages
   ************************************/
-	extend(getPrototypeOf(moment.localeData()), {
+	extend(getPrototypeOf(moment.langData()), {
 		_hMonths: ['Muharram'
                 , 'Safar'
                 , 'Rabi\' al-Awwal'
@@ -377,7 +377,7 @@
 			return parseTokenWord
 		case 'a':
 		case 'A':
-			return moment.localeData(config._l)._meridiemParse
+			return moment.langData(config._l)._meridiemParse
 		case 'X':
 			return parseTokenTimestampMs
 		case 'Z':
@@ -415,7 +415,7 @@
 			break
 		case 'hMMM':
 		case 'hMMMM':
-			a = moment.localeData(config._l).hMonthsParse(input)
+			a = moment.langData(config._l).hMonthsParse(input)
 			if (a != null)
 				datePartArray[1] = a
 			else
@@ -545,7 +545,7 @@
 		if (daysToDayOfWeek < end - 7) {
 			daysToDayOfWeek += 7
 		}
-		adjustedMoment = hMoment(mom).add(daysToDayOfWeek, 'd')
+		adjustedMoment = hMoment(mom).add('d', daysToDayOfWeek)
 		return {
 			week: Math.ceil(adjustedMoment.hDayOfYear() / 7),
 			year: adjustedMoment.hYear()
@@ -606,7 +606,7 @@
 		if (format) {
 			i = 5
 			replace = function (input) {
-				return me.localeData().longDateFormat(input) || input
+				return me.lang().longDateFormat(input) || input
 			}
 			while (i > 0 && localFormattingTokens.test(format)) {
 				i -= 1
@@ -638,7 +638,7 @@
 		var lastDay, h, g
 		if (input != null) {
 			if (typeof input === 'string') {
-				input = this.localeData().hMonthsParse(input)
+				input = this.lang().hMonthsParse(input)
 				if (typeof input !== 'number')
 					return this
 			}
@@ -668,17 +668,17 @@
 
 	hMoment.fn.hDayOfYear = function (input) {
 		var dayOfYear = Math.round((hMoment(this).startOf('day') - hMoment(this).startOf('hYear')) / 864e5) + 1
-		return input == null ? dayOfYear : this.add(input - dayOfYear, 'd')
+		return input == null ? dayOfYear : this.add('d', input - dayOfYear)
 	}
 
 	hMoment.fn.hWeek = function (input) {
-		var week = hWeekOfYear(this, this.localeData()._week.dow, this.localeData()._week.doy).week
-		return input == null ? week : this.add((input - week) * 7, 'd')
+		var week = hWeekOfYear(this, this.lang()._week.dow, this.lang()._week.doy).week
+		return input == null ? week : this.add('d', (input - week) * 7)
 	}
 
 	hMoment.fn.hWeekYear = function (input) {
-		var year = hWeekOfYear(this, this.localeData()._week.dow, this.localeData()._week.doy).year
-		return input == null ? year : this.add(input - year, 'y')
+		var year = hWeekOfYear(this, this.lang()._week.dow, this.lang()._week.doy).year
+		return input == null ? year : this.add('y', input - year)
 	}
 
 	hMoment.fn.add = function (val, units) {
@@ -694,7 +694,7 @@
 		} else if (units === 'hmonth') {
 			this.hMonth(this.hMonth() + val)
 		} else {
-			moment.fn.add.call(this, val, units)
+			moment.fn.add.call(this, units, val)
 		}
 		return this
 	}
@@ -760,7 +760,6 @@
 				'٩': '9',
 				'٠': '0'
 			};
-			/*
 		moment.lang('ar', {
 			months: ('يناير_فبراير_مارس_أبريل_مايو_يونيو_يوليو_أغسطس_سبتمبر_أكتوبر_نوفمبر_ديسمبر').split('_'),
 			monthsShort: ('يناير_فبراير_مارس_أبريل_مايو_يونيو_يوليو_أغسطس_سبتمبر_أكتوبر_نوفمبر_ديسمبر').split('_'),
@@ -820,68 +819,6 @@
 			hMonthsShort: 'محرم_صفر_ربيع ١_ربيع ٢_جمادى ١_جمادى ٢_رجب_شعبان_رمضان_شوال_ذو القعدة_ذو الحجة'.split('_')
 		})
 	}
-	*/
-	
-	moment.locale('ar', {
-			months: ('يناير_فبراير_مارس_أبريل_مايو_يونيو_يوليو_أغسطس_سبتمبر_أكتوبر_نوفمبر_ديسمبر').split('_'),
-			monthsShort: ('يناير_فبراير_مارس_أبريل_مايو_يونيو_يوليو_أغسطس_سبتمبر_أكتوبر_نوفمبر_ديسمبر').split('_'),
-			weekdays: ('الأحد_الإثنين_الثلاثاء_الأربعاء_الخميس_الجمعة_السبت').split('_'),
-			weekdaysShort: ('أحد_إثنين_ثلاثاء_أربعاء_خميس_جمعة_سبت').split('_'),
-			weekdaysMin: 'ح_ن_ث_ر_خ_ج_س'.split('_'),
-			longDateFormat: {
-				LT: 'HH:mm',
-				L: 'hYYYY/hMM/hDD',
-				LL: 'hD hMMMM hYYYY',
-				LLL: 'hD hMMMM hYYYY LT',
-				LLLL: 'dddd، hD hMMMM hYYYY LT'
-			},
-			calendar: {
-				sameDay: '[اليوم على الساعة] LT',
-				nextDay: '[غدا على الساعة] LT',
-				nextWeek: 'dddd [على الساعة] LT',
-				lastDay: '[أمس على الساعة] LT',
-				lastWeek: 'dddd [على الساعة] LT',
-				sameElse: 'L'
-			},
-			relativeTime: {
-				future: 'في %s',
-				past: 'منذ %s',
-				s: 'ثوان',
-				m: 'دقيقة',
-				mm: '%d دقائق',
-				h: 'ساعة',
-				hh: '%d ساعات',
-				d: 'يوم',
-				dd: '%d أيام',
-				M: 'شهر',
-				MM: '%d أشهر',
-				y: 'سنة',
-				yy: '%d سنوات'
-			},
-			ordinal: '%dم',
-			preparse: function (string) {
-				return string.replace(/[۰-۹]/g, function (match) {
-					return numberMap[match];
-				}).replace(/،/g, ',');
-			},
-			postformat: function (string) {
-				return string.replace(/\d/g, function (match) {
-					return symbolMap[match];
-				}).replace(/,/g, '،');
-			},
-			week: {
-				dow: 6 // Saturday is the first day of the week.
-				,
-				doy: 12 // The week that contains Jan 1st is the first week of the year.
-			},
-			meridiem: function (hour) {
-				return hour < 12 ? 'ص' : 'م'
-			},
-			hMonths: ('محرم_صفر_ربيع الأول_ربيع الثاني_جمادى الأولى_جمادى الآخرة_رجب_شعبان_رمضان_شوال_ذو القعدة_ذو الحجة').split('_'),
-			hMonthsShort: 'محرم_صفر_ربيع ١_ربيع ٢_جمادى ١_جمادى ٢_رجب_شعبان_رمضان_شوال_ذو القعدة_ذو الحجة'.split('_')
-		})
-	}
-	
 
 	function toHijri(gy, gm, gd) {
 		var h = d2h(g2d(gy, gm + 1, gd))
