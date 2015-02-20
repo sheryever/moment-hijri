@@ -1,0 +1,42 @@
+<html>
+<head>
+	<script src="lib/moment.min.js"> </script>
+	<script src="moment-hijri.js"> </script>
+</head>
+<body>
+<script type="text/javascript">
+m = moment('1410/8/28', 'hYYYY/hM/hD'); // Parse a Hijri date.
+console.log(m.format('hYYYY/hM/hD [is] YYYY/M/D')); // 1410/8/28 is 1990/3/25
+
+console.log(m.hYear()); // 1410
+console.log(m.hMonth()); // 7
+console.log(m.hDate()); // 28
+console.log(m.hDayOfYear()); // 236
+console.log(m.hWeek()); // 35
+console.log(m.hWeekYear()); // 1410
+
+console.log(m.add(1, 'hYear'));
+console.log(m.add(2, 'hMonth'));
+console.log(m.format('hYYYY/hM/hD')); // 1411/10/28
+
+console.log(m.hMonth(11));
+console.log(m.startOf('hMonth'));
+console.log(m.format('hYYYY/hM/hD')); // 1411/12/1
+
+console.log(m.hYear(1392));
+console.log(m.startOf('hYear'));
+console.log(m.format('hYYYY/hM/hD')); // 1420/1/1
+
+console.log(moment('1436/1/30', 'hYYYY/hMM/hDD').isValid()); // false (This month is only 29 days).
+console.log(moment('1436/2/30', 'hYYYY/hMM/hDD').isValid()); // true (This month is 30 days).
+
+console.log(moment('1436/2/6 16:40', 'hYYYY/hM/hD HH:mm').format('YYYY-M-D HH:mm:ss')); // 2014-11-28 16:40:00
+
+console.log(moment('2014-11-28 16:40:00', 'YYYY-M-D HH:mm:ss').endOf('hMonth').format('hYYYY/hM/hD HH:mm:ss')); // 1436/2/30 23:59:59
+
+// Complex parse:
+console.log(moment('1990 5 25', 'YYYY hM D').format('YYYY/MM/DD')); // 1990/03/25
+
+</script>
+</body>
+</html>
