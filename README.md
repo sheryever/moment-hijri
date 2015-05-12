@@ -98,6 +98,11 @@ To add Arabic language, use loadArabic method:
 moment.loadArabic();
 m = moment('1410/8/28', 'hYYYY/hM/hD');
 m.format('hYYYY/hM/hDهـ الموافق YYYY/M/Dم');
+// 28/8/1410هـ الموافق 1990/3/25 م
+
+moment.loadArabicWithArabicDigits();
+m = moment('1410/8/28', 'hYYYY/hM/hD');
+m.format('hYYYY/hM/hDهـ الموافق YYYY/M/Dم');
 // ١٤١٠/٨/٢٨هـ الموافق ١٩٩٠/٣/٢٥م
 ```
 
