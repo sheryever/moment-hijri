@@ -362,18 +362,7 @@
     function isArray(input) {
         return Object.prototype.toString.call(input) === '[object Array]';
     }
-
-    function compareArrays(array1, array2) {
-        var len = Math.min(array1.length, array2.length),
-	        lengthDiff = Math.abs(array1.length - array2.length),
-	        diffs = 0,
-	        i;
-        for (i = 0; i < len; i += 1) {
-            if (~~array1[i] !== ~~array2[i])
-                diffs += 1;
-        }
-        return diffs + lengthDiff;
-    }
+    
 
     function normalizeUnits(units) {
         if (units === 'M')
@@ -467,9 +456,9 @@
         }
     });
 
-	/************************************
+    /************************************
       Formatting
-  ************************************/
+    ************************************/
 
 	function makeFormatFunction(format) {
 	    var array = format.match(formattingTokens),
@@ -490,7 +479,7 @@
 
 	/************************************
       Parsing
-  ************************************/
+    ************************************/
 
 	function getParseRegexForToken(token, config) {
 		switch (token) {
@@ -642,30 +631,34 @@
 	}
 
 	function makeDateFromStringAndArray(config, utc) {
-	    var tempConfig,
-	        tempMoment,
-	        bestMoment = undefined,
-	        scoreToBeat = 99,
-	        len = config._f.length,
+	    var len = config._f.length,
 	        i,
+	        format,
+	        tempMoment,
+	        bestMoment,
 	        currentScore,
-	        format;
-			// TODO: Check this function.
-		for (i = 0; i < len; i += 1) {
-		    format = config._f[i];
-		    tempConfig = extend({}, config);
-		    tempConfig._f = format;
-		    tempMoment = makeMoment(config._i, format, config._l, utc);
+	        scoreToBeat;
 
-		    currentScore = compareArrays(tempMoment._a, tempMoment.toArray());
-		    currentScore += tempMoment._hDiff;
-		    if (tempMoment._il)
-		        currentScore += tempMoment._il.length;
-			if (currentScore < scoreToBeat) {
-			    scoreToBeat = currentScore;
-			    bestMoment = tempMoment;
-			}
-		}
+	    if (len === 0) {
+	        return makeMoment(new Date(NaN));
+	    }
+
+	    for (i = 0; i < len; i += 1) {
+	        format = config._f[i];
+	        currentScore = 0;
+	        tempMoment = makeMoment(config._i, format, config._l, utc);
+
+	        if (!tempMoment.isValid()) continue;
+
+	        currentScore += tempMoment._hDiff;
+	        if (tempMoment._il)
+	            currentScore += tempMoment._il.length;
+	        if (scoreToBeat == null || currentScore < scoreToBeat) {
+	            scoreToBeat = currentScore;
+	            bestMoment = tempMoment;
+	        }
+	    }
+
 	    return bestMoment;
 	}
 
@@ -696,7 +689,7 @@
 
 	/************************************
       Week of Year
-  ************************************/
+    ************************************/
 
 	function hWeekOfYear(mom, firstDayOfWeek, firstDayOfWeekOfYear) {
 	    var end = firstDayOfWeekOfYear - firstDayOfWeek,
@@ -718,7 +711,7 @@
 
 	/************************************
       Top Level Functions
-  ************************************/
+    ************************************/
 
 	function makeMoment(input, format, lang, utc) {
 	    var config = {
@@ -764,7 +757,7 @@
 
 	/************************************
       hMoment Prototype
-  ************************************/
+    ************************************/
 
 	hMoment.fn.format = function (format) {
 	    var i, replace, me = this;
@@ -893,7 +886,7 @@
 
 	/************************************
       hMoment Statics
-  ************************************/
+    ************************************/
 
 	hMoment.hDaysInMonth = function (year, month) {
 	    var i = getNewMoonMJDNIndex(year, month + 1),
@@ -927,70 +920,7 @@
 			    '0': '0'
 			};
 
-        ///#region old lang method
-			/*
-		moment.lang('ar', {
-			months: ('يناير_فبراير_مارس_أبريل_مايو_يونيو_يوليو_أغسطس_سبتمبر_أكتوبر_نوفمبر_ديسمبر').split('_'),
-			monthsShort: ('يناير_فبراير_مارس_أبريل_مايو_يونيو_يوليو_أغسطس_سبتمبر_أكتوبر_نوفمبر_ديسمبر').split('_'),
-			weekdays: ('الأحد_الإثنين_الثلاثاء_الأربعاء_الخميس_الجمعة_السبت').split('_'),
-			weekdaysShort: ('أحد_إثنين_ثلاثاء_أربعاء_خميس_جمعة_سبت').split('_'),
-			weekdaysMin: 'ح_ن_ث_ر_خ_ج_س'.split('_'),
-			longDateFormat: {
-				LT: 'HH:mm',
-				L: 'hYYYY/hMM/hDD',
-				LL: 'hD hMMMM hYYYY',
-				LLL: 'hD hMMMM hYYYY LT',
-				LLLL: 'dddd، hD hMMMM hYYYY LT'
-			},
-			calendar: {
-				sameDay: '[اليوم على الساعة] LT',
-				nextDay: '[غدا على الساعة] LT',
-				nextWeek: 'dddd [على الساعة] LT',
-				lastDay: '[أمس على الساعة] LT',
-				lastWeek: 'dddd [على الساعة] LT',
-				sameElse: 'L'
-			},
-			relativeTime: {
-				future: 'في %s',
-				past: 'منذ %s',
-				s: 'ثوان',
-				m: 'دقيقة',
-				mm: '%d دقائق',
-				h: 'ساعة',
-				hh: '%d ساعات',
-				d: 'يوم',
-				dd: '%d أيام',
-				M: 'شهر',
-				MM: '%d أشهر',
-				y: 'سنة',
-				yy: '%d سنوات'
-			},
-			ordinal: '%dم',
-			preparse: function (string) {
-				return string.replace(/[۰-۹]/g, function (match) {
-					return numberMap[match];
-				}).replace(/،/g, ',');
-			},
-			postformat: function (string) {
-				return string.replace(/\d/g, function (match) {
-					return symbolMap[match];
-				}).replace(/,/g, '،');
-			},
-			week: {
-				dow: 6 // Saturday is the first day of the week.
-				,
-				doy: 12 // The week that contains Jan 1st is the first week of the year.
-			},
-			meridiem: function (hour) {
-				return hour < 12 ? 'ص' : 'م'
-			},
-			hMonths: ('محرم_صفر_ربيع الأول_ربيع الثاني_جمادى الأولى_جمادى الآخرة_رجب_شعبان_رمضان_شوال_ذو القعدة_ذو الحجة').split('_'),
-			hMonthsShort: 'محرم_صفر_ربيع ١_ربيع ٢_جمادى ١_جمادى ٢_رجب_شعبان_رمضان_شوال_ذو القعدة_ذو الحجة'.split('_')
-		})
-	}
-	*/
-        ///#endregion
-	    moment.locale('ar', {
+	    moment.locale('ar-sa', {
 	        months: ('يناير_فبراير_مارس_أبريل_مايو_يونيو_يوليو_أغسطس_سبتمبر_أكتوبر_نوفمبر_ديسمبر').split('_'),
 	        monthsShort: ('يناير_فبراير_مارس_أبريل_مايو_يونيو_يوليو_أغسطس_سبتمبر_أكتوبر_نوفمبر_ديسمبر').split('_'),
 	        weekdays: ('الأحد_الإثنين_الثلاثاء_الأربعاء_الخميس_الجمعة_السبت').split('_'),
@@ -1043,7 +973,7 @@
 	            doy: 12 // The week that contains Jan 1st is the first week of the year.
 	        },
 	        meridiem: function(hour) {
-	            return hour < 12 ? 'ص' : 'م'
+	            return hour < 12 ? 'ص' : 'م';
 	        },
 	        hMonths: ('محرم_صفر_ربيع الأول_ربيع الثاني_جمادى الأولى_جمادى الآخرة_رجب_شعبان_رمضان_شوال_ذو القعدة_ذو الحجة').split('_'),
 	        hMonthsShort: 'محرم_صفر_ربيع ١_ربيع ٢_جمادى ١_جمادى ٢_رجب_شعبان_رمضان_شوال_ذو القعدة_ذو الحجة'.split('_')
@@ -1076,7 +1006,7 @@
 			    '٠': '0'
 			};
 
-	    moment.locale('ar', {
+	    moment.locale('ar-sa', {
 	        months: ('يناير_فبراير_مارس_أبريل_مايو_يونيو_يوليو_أغسطس_سبتمبر_أكتوبر_نوفمبر_ديسمبر').split('_'),
 	        monthsShort: ('يناير_فبراير_مارس_أبريل_مايو_يونيو_يوليو_أغسطس_سبتمبر_أكتوبر_نوفمبر_ديسمبر').split('_'),
 	        weekdays: ('الأحد_الإثنين_الثلاثاء_الأربعاء_الخميس_الجمعة_السبت').split('_'),
